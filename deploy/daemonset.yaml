@@ -18,7 +18,7 @@ spec:
       hostNetwork: true
       containers:
         - name: ebpf-agent
-          image: nodeloom/ebpf-agent:latest
+          image: ghcr.io/nodeloom/ebpf-agent:latest
           securityContext:
             privileged: true
             capabilities:
@@ -34,7 +34,7 @@ spec:
                   name: nodeloom-credentials
                   key: api-key
             - name: NODELOOM_ENDPOINT
-              value: "https://api.nodeloom.io"
+              value: "https://app.nodeloom.io"
             - name: NODELOOM_CLUSTER_NAME
               valueFrom:
                 fieldRef:

@@ -129,25 +129,32 @@ uname -r   # must be >= 5.8
 
 ## Installation
 
-### Standalone Binary
+### Option 1: Download Prebuilt Binary
+
+Download the latest release from GitHub:
 
 ```bash
-# Build from source
-git clone https://github.com/nodeloom/nodeloom-ebpf-agent.git
-cd nodeloom-ebpf-agent
-CGO_ENABLED=0 GOOS=linux go build -o nodeloom-ebpf-agent .
+# Linux x86_64
+curl -L -o nodeloom-ebpf-agent \
+  https://github.com/Nodeloom/nodeloom-ebpf-agent/releases/latest/download/nodeloom-ebpf-agent-linux-amd64
+chmod +x nodeloom-ebpf-agent
+
+# Linux ARM64
+curl -L -o nodeloom-ebpf-agent \
+  https://github.com/Nodeloom/nodeloom-ebpf-agent/releases/latest/download/nodeloom-ebpf-agent-linux-arm64
+chmod +x nodeloom-ebpf-agent
 
 # Run (requires root or appropriate capabilities)
 sudo NODELOOM_API_KEY=your-api-key \
-     NODELOOM_ENDPOINT=https://api.nodeloom.io \
+     NODELOOM_ENDPOINT=https://app.nodeloom.io \
      ./nodeloom-ebpf-agent
 ```
 
-### Docker
+All releases are available at: https://github.com/Nodeloom/nodeloom-ebpf-agent/releases
+
+### Option 2: Docker
 
 ```bash
-docker build -t nodeloom/ebpf-agent:latest .
-
 docker run -d \
   --name nodeloom-ebpf-agent \
   --privileged \
@@ -157,11 +164,11 @@ docker run -d \
   -v /sys:/sys:ro \
   -v /lib/modules:/lib/modules:ro \
   -e NODELOOM_API_KEY=your-api-key \
-  -e NODELOOM_ENDPOINT=https://api.nodeloom.io \
-  nodeloom/ebpf-agent:latest
+  -e NODELOOM_ENDPOINT=https://app.nodeloom.io \
+  ghcr.io/nodeloom/ebpf-agent:latest
 ```
 
-### Kubernetes DaemonSet
+### Option 3: Kubernetes DaemonSet
 
 ```bash
 # Create the namespace and secret
@@ -170,10 +177,18 @@ kubectl -n nodeloom create secret generic nodeloom-credentials \
   --from-literal=api-key=your-api-key
 
 # Deploy the DaemonSet
-kubectl apply -f deploy/daemonset.yaml
+kubectl apply -f https://raw.githubusercontent.com/Nodeloom/nodeloom-ebpf-agent/main/deploy/daemonset.yaml
 ```
 
 See the full DaemonSet manifest at [`deploy/daemonset.yaml`](deploy/daemonset.yaml).
+
+### Option 4: Build from Source
+
+```bash
+git clone https://github.com/Nodeloom/nodeloom-ebpf-agent.git
+cd nodeloom-ebpf-agent
+CGO_ENABLED=0 GOOS=linux go build -o nodeloom-ebpf-agent .
+```
 
 ---
 
