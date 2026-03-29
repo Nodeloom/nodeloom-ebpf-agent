@@ -46,6 +46,16 @@ func (e *Engine) CheckRateLimit(pid int) bool {
 	defer e.mu.Unlock()
 
 	now := time.Now()
+
+	// Evict expired entries to prevent unbounded memory growth
+	if len(e.rateLimits) > 10000 {
+		for k, v := range e.rateLimits {
+			if now.After(v.windowEnd) {
+				delete(e.rateLimits, k)
+			}
+		}
+	}
+
 	state, ok := e.rateLimits[pid]
 	if !ok || now.After(state.windowEnd) {
 		e.rateLimits[pid] = &rateLimitState{

@@ -78,6 +78,7 @@ func (p *ProcInterceptor) scanLoop(ctx context.Context) {
 	defer close(p.eventCh)
 
 	seenConnections := make(map[string]bool) // "pid:remoteIP:remotePort"
+	sweepCounter := 0
 
 	for {
 		select {
@@ -86,6 +87,13 @@ func (p *ProcInterceptor) scanLoop(ctx context.Context) {
 		case <-p.stopCh:
 			return
 		case <-ticker.C:
+			// Periodically clear stale entries to prevent unbounded memory growth
+			sweepCounter++
+			if sweepCounter >= 360 { // every ~30 minutes at 5s interval
+				seenConnections = make(map[string]bool)
+				sweepCounter = 0
+			}
+
 			connections := p.scanTCPConnections()
 			processSet := make(map[int]bool)
 

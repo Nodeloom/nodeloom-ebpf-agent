@@ -135,7 +135,7 @@ func (bs *BatchSender) sendBatch(events []*telemetry.TelemetryEvent) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		log.Printf("Batch send failed (status %d): %s", resp.StatusCode, string(body))
 		return
 	}
@@ -172,7 +172,7 @@ func (bs *BatchSender) RegisterProbe(ctx context.Context, cfg *config.Config) (s
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 65536))
 	if err != nil {
 		return "", fmt.Errorf("failed to read response: %w", err)
 	}
@@ -237,7 +237,7 @@ func (bs *BatchSender) SendHeartbeat(ctx context.Context, probeID string, proces
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		return fmt.Errorf("heartbeat failed (status %d): %s", resp.StatusCode, string(body))
 	}
 
@@ -263,8 +263,8 @@ func (bs *BatchSender) FetchConfig(ctx context.Context, probeID string) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {
-		body, _ := io.ReadAll(resp.Body)
-		log.Printf("Fetched probe config: %s", string(body))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 65536))
+		log.Printf("Fetched probe config (%d bytes)", len(body))
 	}
 }
 
