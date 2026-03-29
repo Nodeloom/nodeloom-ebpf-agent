@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nodeloom-ebpf-agent
+  namespace: nodeloom
+  labels:
+    app: nodeloom-ebpf-agent
+spec:
+  selector:
+    matchLabels:
+      app: nodeloom-ebpf-agent
+  template:
+    metadata:
+      labels:
+        app: nodeloom-ebpf-agent
+    spec:
+      hostPID: true
+      hostNetwork: true
+      containers:
+        - name: ebpf-agent
+          image: nodeloom/ebpf-agent:latest
+          securityContext:
+            privileged: true
+            capabilities:
+              add:
+                - BPF
+                - PERFMON
+                - SYS_PTRACE
+                - NET_ADMIN
+          env:
+            - name: NODELOOM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nodeloom-credentials
+                  key: api-key
+            - name: NODELOOM_ENDPOINT
+              value: "https://api.nodeloom.io"
+            - name: NODELOOM_CLUSTER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: proc
+              mountPath: /proc
+              readOnly: true
+            - name: sys
+              mountPath: /sys
+              readOnly: true
+            - name: lib-modules
+              mountPath: /lib/modules
+              readOnly: true
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 200m
+            requests:
+              memory: 128Mi
+              cpu: 100m
+      volumes:
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
