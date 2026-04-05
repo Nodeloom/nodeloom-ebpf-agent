@@ -107,7 +107,7 @@ func (bs *BatchSender) sendBatch(events []*telemetry.TelemetryEvent) {
 
 	batch := telemetry.BatchRequest{
 		Events:      rawEvents,
-		SDKVersion:  "ebpf-agent/1.0.0",
+		SDKVersion:  "ebpf-agent/1.1.0",
 		SDKLanguage: "go",
 	}
 
@@ -149,7 +149,7 @@ func (bs *BatchSender) RegisterProbe(ctx context.Context, cfg *config.Config) (s
 		"hostname":      cfg.Hostname,
 		"clusterName":   cfg.ClusterName,
 		"kernelVersion": getKernelVersion(),
-		"agentVersion":  "1.0.0",
+		"agentVersion":  "1.1.0",
 	}
 
 	data, err := json.Marshal(payload)
